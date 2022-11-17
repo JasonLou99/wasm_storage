@@ -1,11 +1,11 @@
 use hello_world::greeter_server::{Greeter, GreeterServer};
 use hello_world::{HelloReply, HelloRequest};
+use std::env;
+use std::error::Error;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tonic::{transport::Server, Request, Response, Status};
-
-use std::env;
-use std::error::Error;
+use wasm_storage::nodes::kvs::KvsNode;
 // use wasm_storage::store;
 
 pub mod hello_world {
@@ -50,7 +50,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // 否则我们将在127.0.0.1:12000上为连接设置我们的TCP侦听器。
     let to_client_addr = env::args()
         .nth(1)
-        .unwrap_or_else(|| "127.0.0.1:12000".to_string());
+        .unwrap_or_else(|| "192.168.10.120:12000".to_string());
 
     // 创建一个TCP侦听器，它将侦听传入的连接。
     // 此TCP侦听器绑定到我们上面确定的地址，并且必须与事件循环相关联。
@@ -79,8 +79,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 if n == 0 {
                     return;
                 }
-
                 println!("{}", String::from_utf8_lossy(&buf));
+                // 执行kvs间的异步同步操作
+                KvsNode::gossip_say_hello().await.unwrap();
+
                 socket
                     .write_all("&buf[0..n]".as_bytes())
                     .await

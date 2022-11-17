@@ -4,7 +4,7 @@ use std::time::Duration;
 use wasmedge_wasi_socket::{Shutdown, TcpStream};
 
 fn main() -> std::io::Result<()> {
-    let port = std::env::var("PORT").unwrap_or("1234".to_string());
+    let port = std::env::var("PORT").unwrap_or("12000".to_string());
     println!("connect to 192.168.10.120:{}", port);
     let mut stream = TcpStream::connect(format!("192.168.10.120:{}", port))?;
     stream.set_nonblocking(true)?;
