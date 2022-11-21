@@ -1,6 +1,5 @@
 use hello_world::greeter_server::{Greeter, GreeterServer};
 use hello_world::{HelloReply, HelloRequest};
-use std::borrow::{Borrow, Cow};
 use std::env;
 use std::error::Error;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -35,9 +34,9 @@ impl Greeter for MyGreeter {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    println!("1");
     let to_kvs_addr = "[::1]:50051".parse()?;
     let greeter = MyGreeter::default();
+    // 开启RPC Server，处理kvs调用
     tokio::spawn(async move {
         Server::builder()
             .add_service(GreeterServer::new(greeter))
@@ -45,16 +44,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
             .await
             .unwrap();
     });
-    // env_logger::init();
-    println!("2");
-    // 允许将要侦听的地址作为该程序的第一个参数进行传递，
-    // 否则我在127.0.0.1:12000上为连接设置我们的TCP侦听器。
+
+    // 第一个参数是TCP监听端口，默认会以12000端口为TCP端口
     let to_client_addr = env::args()
         .nth(1)
         .unwrap_or_else(|| "192.168.10.120:12000".to_string());
 
     // 创建一个TCP侦听器，它将侦听传入的连接。
-    // 此TCP侦听器绑定到我们上面确定的地址，并且必须与事件循环相关联。
     let mut listener = TcpListener::bind(&to_client_addr).await?;
     println!("Listening on: {}", to_client_addr);
 
@@ -85,10 +81,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 } else {
                     println!("client_op: others");
                 }
-
-                // 执行kvs间的异步同步操作
-                KvsNode::gossip_say_hello().await.unwrap();
-
                 socket
                     .write_all("&buf[0..n]".as_bytes())
                     .await

@@ -8,8 +8,8 @@ fn main() -> std::io::Result<()> {
     println!("connect to 192.168.10.120:{}", port);
     let mut stream = TcpStream::connect(format!("192.168.10.120:{}", port))?;
     stream.set_nonblocking(true)?;
-    println!("sending hello message");
-    stream.write(b"Hello")?;
+    println!("sending put message");
+    stream.write(b"put")?;
 
     loop {
         let mut buf = [0; 128];

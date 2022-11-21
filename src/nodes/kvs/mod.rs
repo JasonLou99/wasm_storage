@@ -1,15 +1,16 @@
-use crate::store::TsValueStore;
+use crate::store_hashmap::TsValueStore;
 
 // 找同级的gossip.rs 或者 gossip/mod.rs
 mod gossip;
 
+#[allow(dead_code)]
 pub struct KvsNode {
     // 本节点地址
     node_id: String,
     // 集群成员信息
     membership: Vec<String>,
     // 底层存储
-    kvs: TsValueStore,
+    store: TsValueStore,
 }
 
 impl KvsNode {
@@ -21,7 +22,7 @@ impl KvsNode {
         Self {
             node_id: node_id_arg.clone(),
             membership: membership_arg,
-            kvs: TsValueStore::new(),
+            store: TsValueStore::new(),
         }
     }
 }
