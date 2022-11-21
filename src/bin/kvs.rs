@@ -1,5 +1,6 @@
 use hello_world::greeter_server::{Greeter, GreeterServer};
 use hello_world::{HelloReply, HelloRequest};
+use std::borrow::{Borrow, Cow};
 use std::env;
 use std::error::Error;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -47,7 +48,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // env_logger::init();
     println!("2");
     // 允许将要侦听的地址作为该程序的第一个参数进行传递，
-    // 否则我们将在127.0.0.1:12000上为连接设置我们的TCP侦听器。
+    // 否则我在127.0.0.1:12000上为连接设置我们的TCP侦听器。
     let to_client_addr = env::args()
         .nth(1)
         .unwrap_or_else(|| "192.168.10.120:12000".to_string());
@@ -58,15 +59,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
     println!("Listening on: {}", to_client_addr);
 
     loop {
-        println!("test1");
-        // 异步等待inbound套接字
+        // 异步等待套接字
         let (mut socket, _) = listener.accept().await?;
 
-        // 我们希望所有客户同时取得进展，而不是在一个客户完成另一个客户后阻止另一个客户。
-        // 为此，我们使用`tokio：：spawn`函数在后台执行工作。
-        // 本质上，我们在这里执行一个并发运行的新任务，这将允许并发处理我们的所有客户端。
+        // 使用绿色线程异步的处理多个任务
         tokio::spawn(async move {
-            println!("test2");
             let mut buf = vec![0; 1024];
 
             // 在循环中，从套接字读取数据并将数据写回。
@@ -79,7 +76,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 if n == 0 {
                     return;
                 }
-                println!("{}", String::from_utf8_lossy(&buf));
+                let client_op = String::from_utf8_lossy(&buf);
+                if client_op.starts_with("put") {
+                    println!("client_op: put");
+                    KvsNode::gossip_say_hello().await.unwrap();
+                } else if client_op.starts_with("get") {
+                    println!("client_op: get");
+                } else {
+                    println!("client_op: others");
+                }
+
                 // 执行kvs间的异步同步操作
                 KvsNode::gossip_say_hello().await.unwrap();
 
