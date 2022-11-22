@@ -1,49 +1,27 @@
-use hello_world::greeter_server::{Greeter, GreeterServer};
-use hello_world::{HelloReply, HelloRequest};
+use log::{debug, error, info, log_enabled, Level};
 use std::env;
 use std::error::Error;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
-use tonic::{transport::Server, Request, Response, Status};
+use wasm_storage::nodes::kvs::gossip;
 use wasm_storage::nodes::kvs::KvsNode;
-// use wasm_storage::store;
-
-pub mod hello_world {
-    tonic::include_proto!("helloworld");
-}
-
-#[derive(Debug, Default)]
-pub struct MyGreeter {}
-
-#[tonic::async_trait]
-impl Greeter for MyGreeter {
-    async fn say_hello(
-        &self,
-        request: Request<HelloRequest>, // 接收以HelloRequest为类型的请求
-    ) -> Result<Response<HelloReply>, Status> {
-        // 返回以HelloReply为类型的示例作为响应
-        println!("Got a request: {:?}", request);
-
-        let reply = hello_world::HelloReply {
-            message: format!("Hello {}!", request.into_inner().name).into(), // 由于gRPC请求和响应中的字段都是私有的，所以需要使用 .into_inner()
-        };
-
-        Ok(Response::new(reply)) // 发回格式化的问候语
-    }
-}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let to_kvs_addr = "[::1]:50051".parse()?;
-    let greeter = MyGreeter::default();
-    // 开启RPC Server，处理kvs调用
-    tokio::spawn(async move {
-        Server::builder()
-            .add_service(GreeterServer::new(greeter))
-            .serve(to_kvs_addr)
-            .await
-            .unwrap();
-    });
+    env_logger::init();
+
+    // 初始化KvsNode
+    let kvs_node = KvsNode::init(
+        String::from("192.168.10.120:11000"),
+        vec![
+            String::from("192.168.10.120:11000"),
+            String::from("192.168.10.121:11000"),
+        ],
+    );
+    // 开启RPC Server
+    gossip::make_gossip_server(kvs_node, String::from("192.168.10.120:11000"))
+        .await
+        .unwrap();
 
     // 第一个参数是TCP监听端口，默认会以12000端口为TCP端口
     let to_client_addr = env::args()
@@ -75,7 +53,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 let client_op = String::from_utf8_lossy(&buf);
                 if client_op.starts_with("put") {
                     println!("client_op: put");
-                    KvsNode::append_entries_in_gossip().await.unwrap();
+                    KvsNode::append_entries_to_others().await.unwrap();
                 } else if client_op.starts_with("get") {
                     println!("client_op: get");
                 } else {

@@ -1,7 +1,7 @@
 syntax = "proto3";
 package gossip_proto;
 
-service GOSSIP {
+service Gossip {
     rpc AppendEntriesInGossip (AppendEntriesInGossipArgs) returns (AppendEntriesInGossipReply);
 }
 

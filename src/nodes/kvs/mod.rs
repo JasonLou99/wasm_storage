@@ -1,7 +1,7 @@
 use crate::store::Store;
 
 // 找同级的gossip.rs 或者 gossip/mod.rs
-mod gossip;
+pub mod gossip;
 
 #[allow(dead_code)]
 pub struct KvsNode {
@@ -14,7 +14,7 @@ pub struct KvsNode {
 }
 
 impl KvsNode {
-    pub async fn init(node_id_arg: String, membership_arg: Vec<String>) -> KvsNode {
+    pub fn init(node_id_arg: String, membership_arg: Vec<String>) -> KvsNode {
         Self::new(node_id_arg, membership_arg)
     }
 
