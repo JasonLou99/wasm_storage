@@ -75,7 +75,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 let client_op = String::from_utf8_lossy(&buf);
                 if client_op.starts_with("put") {
                     println!("client_op: put");
-                    KvsNode::gossip_say_hello().await.unwrap();
+                    KvsNode::append_entries_in_gossip().await.unwrap();
                 } else if client_op.starts_with("get") {
                     println!("client_op: get");
                 } else {

@@ -1,0 +1,15 @@
+syntax = "proto3";
+package gossip_proto;
+
+service GOSSIP {
+    rpc AppendEntriesInGossip (AppendEntriesInGossipArgs) returns (AppendEntriesInGossipReply);
+}
+
+// kvs 追加log参数
+message AppendEntriesInGossipArgs {
+    bytes   Log = 1;
+}
+message AppendEntriesInGossipReply {
+    // 回复包含问候语
+    bool success = 1;
+}

@@ -1,5 +1,22 @@
 use rocksdb::DB;
 
+// log struct what is sent in rpc
+pub struct Log {
+    option: String,
+    key: String,
+    value: String,
+}
+
+impl Log {
+    pub fn init(option_arg: String, key_arg: String, value_arg: String) -> Log {
+        Log {
+            option: option_arg,
+            key: key_arg,
+            value: value_arg,
+        }
+    }
+}
+
 pub struct Store {
     db: DB,
 }
@@ -36,26 +53,35 @@ impl Store {
 
 #[cfg(test)]
 mod db_tests {
-    use rocksdb::{Options, DB};
+    use super::Store;
     #[test]
     fn get() {
-        // NB: db is automatically closed at end of lifetime
-        let path = "demo";
-        {
-            let db = DB::open_default(path).unwrap();
-            db.put(b"my key", b"my value").unwrap();
-            match db.get(b"my key") {
-                Ok(Some(value)) => {
-                    println!(
-                        "!!!!!!!!!!!!!!!!!!!!!!retrieved value {}",
-                        String::from_utf8(value).unwrap()
-                    )
-                }
-                Ok(None) => println!("value not found"),
-                Err(e) => println!("operational problem encountered: {}", e),
-            }
-            db.delete(b"my key").unwrap();
-        }
-        let _ = DB::destroy(&Options::default(), path);
+        let path = "db";
+        let store = Store::init(String::from(path));
+        store
+            .db
+            .put(String::from("testKey"), String::from("testValue"))
+            .unwrap();
+        let v = store.db.get(String::from("testKey")).unwrap();
+        assert_eq!(v, Some(b"testValue".to_vec()));
     }
 }
+
+// NB: db is automatically closed at end of lifetime
+// let path = "demo";
+// {
+//     let db = DB::open_default(path).unwrap();
+//     db.put(b"my key", b"my value").unwrap();
+//     match db.get(b"my key") {
+//         Ok(Some(value)) => {
+//             println!(
+//                 "!!!!!!!!!!!!!!!!!!!!!!retrieved value {}",
+//                 String::from_utf8(value).unwrap()
+//             )
+//         }
+//         Ok(None) => println!("value not found"),
+//         Err(e) => println!("operational problem encountered: {}", e),
+//     }
+//     db.delete(b"my key").unwrap();
+// }
+// let _ = DB::destroy(&Options::default(), path);

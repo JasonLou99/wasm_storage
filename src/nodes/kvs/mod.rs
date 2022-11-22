@@ -1,4 +1,4 @@
-use crate::store_hashmap::TsValueStore;
+use crate::store::Store;
 
 // 找同级的gossip.rs 或者 gossip/mod.rs
 mod gossip;
@@ -10,7 +10,7 @@ pub struct KvsNode {
     // 集群成员信息
     membership: Vec<String>,
     // 底层存储
-    store: TsValueStore,
+    store: Store,
 }
 
 impl KvsNode {
@@ -22,7 +22,7 @@ impl KvsNode {
         Self {
             node_id: node_id_arg.clone(),
             membership: membership_arg,
-            store: TsValueStore::new(),
+            store: Store::init(String::from("db")),
         }
     }
 }
