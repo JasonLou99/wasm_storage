@@ -1,38 +1,46 @@
-use log::{debug, error, info, log_enabled, Level};
+use log::{debug, info};
 use std::env;
 use std::error::Error;
+use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
-use wasm_storage::nodes::kvs::gossip;
+use wasm_storage::nodes::kvs::gossip::{self, GossipEntity};
 use wasm_storage::nodes::kvs::KvsNode;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     env_logger::init();
+    let args: Vec<String> = env::args().collect();
 
+    let node_id = &args[1];
+    let membership = &args[2..];
     // 初始化KvsNode
-    let kvs_node = KvsNode::init(
-        String::from("192.168.10.120:11000"),
-        vec![
-            String::from("192.168.10.120:11000"),
-            String::from("192.168.10.121:11000"),
-        ],
-    );
+    let kvs_node = KvsNode::init(node_id.to_string(), membership.to_vec());
+    info!("kvsnode init success!");
+    info!("kvsnode node_id: {}", kvs_node.get_node_id());
+    info!("kvsnode membership: {:?}", kvs_node.get_membership());
+    println!("ss");
     // 开启RPC Server
-    gossip::make_gossip_server(kvs_node, String::from("192.168.10.120:11000"))
-        .await
-        .unwrap();
+    let gossip_entity = GossipEntity {};
+    tokio::spawn(async move {
+        gossip::make_gossip_server(gossip_entity, String::from("192.168.10.120:11000"))
+            .await
+            .unwrap();
+    });
+    println!("ss");
 
-    // 第一个参数是TCP监听端口，默认会以12000端口为TCP端口
-    let to_client_addr = env::args()
-        .nth(1)
-        .unwrap_or_else(|| "192.168.10.120:12000".to_string());
+    // 默认会以12000端口为TCP端口
+    let to_client_addr = "192.168.10.120:12000".to_string();
 
     // 创建一个TCP侦听器，它将侦听传入的连接。
     let mut listener = TcpListener::bind(&to_client_addr).await?;
     println!("Listening on: {}", to_client_addr);
 
+    let arc_kvs_node = Arc::new(kvs_node);
     loop {
+        // 因为TCP需要异步并行接收多个连接，所以下面使用tokio::spawn，但是会move kvs_node的所有权
+        // 所以这里使用Arc clone的方式，每次循环clone一个所有者，实现单个kvs_node多个所有者并行处理TCP连接
+        let arc_kvs_node_clone = Arc::clone(&arc_kvs_node);
         // 异步等待套接字
         let (mut socket, _) = listener.accept().await?;
 
@@ -52,17 +60,29 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 }
                 let client_op = String::from_utf8_lossy(&buf);
                 if client_op.starts_with("put") {
-                    println!("client_op: put");
-                    KvsNode::append_entries_to_others().await.unwrap();
+                    info!("client operation: put");
+                    debug!("kvs send RPC request: send_append_entries_in_gossip");
+                    arc_kvs_node_clone
+                        .send_append_entries_in_gossip()
+                        .await
+                        .unwrap();
+                    socket
+                        .write_all("put success".as_bytes())
+                        .await
+                        .expect("failed to write data to socket");
                 } else if client_op.starts_with("get") {
-                    println!("client_op: get");
+                    info!("client operation: get");
+                    socket
+                        .write_all("get success".as_bytes())
+                        .await
+                        .expect("failed to write data to socket");
                 } else {
-                    println!("client_op: others");
+                    info!("client operation is error");
+                    socket
+                        .write_all("your operation is wrong, only put or get".as_bytes())
+                        .await
+                        .expect("failed to write data to socket");
                 }
-                socket
-                    .write_all("&buf[0..n]".as_bytes())
-                    .await
-                    .expect("failed to write data to socket");
             }
         });
     }

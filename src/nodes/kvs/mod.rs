@@ -25,4 +25,12 @@ impl KvsNode {
             store: Store::init(String::from("db")),
         }
     }
+
+    pub fn get_node_id(&self) -> String {
+        self.node_id.clone()
+    }
+
+    pub fn get_membership(&self) -> Vec<String> {
+        self.membership.clone()
+    }
 }

@@ -9,7 +9,7 @@ fn main() -> std::io::Result<()> {
     let mut stream = TcpStream::connect(format!("192.168.10.120:{}", port))?;
     stream.set_nonblocking(true)?;
     println!("sending put message");
-    stream.write(b"put")?;
+    stream.write(b"put ssss")?;
 
     loop {
         let mut buf = [0; 128];
