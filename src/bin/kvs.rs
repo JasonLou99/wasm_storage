@@ -19,7 +19,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     info!("kvsnode init success!");
     info!("kvsnode node_id: {}", kvs_node.get_node_id());
     info!("kvsnode membership: {:?}", kvs_node.get_membership());
-    println!("ss");
     // 开启RPC Server
     let gossip_entity = GossipEntity {};
     tokio::spawn(async move {
@@ -27,13 +26,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
             .await
             .unwrap();
     });
-    println!("ss");
+    debug!("GOSSIP RPC Server init success!");
 
     // 默认会以12000端口为TCP端口
     let to_client_addr = "192.168.10.120:12000".to_string();
 
     // 创建一个TCP侦听器，它将侦听传入的连接。
-    let mut listener = TcpListener::bind(&to_client_addr).await?;
+    let listener = TcpListener::bind(&to_client_addr).await?;
     println!("Listening on: {}", to_client_addr);
 
     let arc_kvs_node = Arc::new(kvs_node);
