@@ -33,4 +33,16 @@ impl KvsNode {
     pub fn get_membership(&self) -> Vec<String> {
         self.membership.clone()
     }
+
+    pub async fn put(
+        &mut self,
+        key_arg: String,
+        value_arg: String,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        self.store.put(key_arg, value_arg)
+    }
+
+    pub async fn get(&mut self, key_arg: String) -> Result<String, rocksdb::Error> {
+        self.store.get(key_arg)
+    }
 }

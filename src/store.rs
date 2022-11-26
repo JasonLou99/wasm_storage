@@ -31,8 +31,8 @@ impl Store {
 
     // 写值
     pub fn put(&mut self, key: String, value: String) -> Result<(), Box<dyn std::error::Error>> {
-        let res = self.db.put(key, value)?;
-        Ok(res)
+        let result = self.db.put(key, value)?;
+        Ok(result)
     }
 
     // 读值

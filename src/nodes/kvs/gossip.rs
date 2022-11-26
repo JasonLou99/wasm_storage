@@ -44,7 +44,7 @@ impl KvsNode {
             log: "gossip say hello".into(),
         });
         let response = client.append_entries_in_gossip(request).await.unwrap();
-        debug!("append_entries_in_gossip RPC response: {:?}", response);
+        // debug!("append_entries_in_gossip RPC response: {:?}", response);
         Ok(())
     }
 }

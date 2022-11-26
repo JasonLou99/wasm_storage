@@ -12,3 +12,4 @@ bytecodec = "0.4.15"
 wasmedge_http_req = "0.8.1"
 wasmedge_wasi_socket = { git = "https://github.com/second-state/wasmedge_wasi_socket.git" }
 httparse = "1.5"
+chrono = "0.4.23"
