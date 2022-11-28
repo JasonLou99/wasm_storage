@@ -63,7 +63,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 }
                 let client_op = String::from_utf8_lossy(&buf);
                 if client_op.starts_with("put") {
-                    info!("client operation: put");
+                    info!("Client Operation: put");
                     let all_msg = &client_op[0..client_op.len()];
                     let put_key_value = &all_msg[4..client_op.len()];
                     let (put_key, put_value) = put_key_value.rsplit_once('=').unwrap();
@@ -74,7 +74,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                             .put(put_key.to_string(), put_value.to_string()),
                     )
                     .unwrap();
-                    debug!("KvsNode PUT {} {}.", put_key, put_value);
+                    debug!("KvsNode put {} {}.", put_key, put_value);
                     socket
                         .write_all("put success".as_bytes())
                         .await
@@ -85,18 +85,19 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     arc_kvs_node_clone
                         .lock()
                         .await
-                        .send_append_entries_in_gossip()
+                        .send_append_entries_in_gossip(put_key.to_string(), put_value.to_string())
                         .await
                         .unwrap();
                 } else if client_op.starts_with("get") {
-                    info!("client operation: get");
+                    info!("Client Operation: get");
                     let all_msg = &client_op[0..client_op.len()];
+                    // println!("all_msg: {}", all_msg);
                     let get_key_value = &all_msg[4..client_op.len()];
-                    println!("get_key_value: {}", get_key_value);
+                    // println!("get_key_value: {}", get_key_value);
                     let (get_key_temp, _) = get_key_value.rsplit_once('.').unwrap();
-                    println!("get_key_temp: {}", get_key_temp);
+                    // println!("get_key_temp: {}", get_key_temp);
                     let (get_key, _) = get_key_temp.rsplit_once('.').unwrap();
-                    println!("get_key: {}", get_key);
+                    // println!("get_key: {}", get_key);
                     let get_value =
                         block_on(block_on(arc_kvs_node_clone.lock()).get(get_key.to_string()))
                             .unwrap();

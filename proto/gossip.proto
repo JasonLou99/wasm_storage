@@ -5,9 +5,9 @@ service Gossip {
     rpc AppendEntriesInGossip (AppendEntriesInGossipArgs) returns (AppendEntriesInGossipReply);
 }
 
-// kvs 追加log参数
 message AppendEntriesInGossipArgs {
-    bytes   Log = 1;
+    string   key = 1;
+    string   value =2;
 }
 message AppendEntriesInGossipReply {
     // 回复包含问候语

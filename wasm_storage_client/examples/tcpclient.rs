@@ -93,11 +93,11 @@ fn main() -> std::io::Result<()> {
     // let key = "key1";
     // let value = "value1";
     println!("sending put message");
-    let cmd_put = format!("put key1=value1.");
-    let cmd_get = format!("get key1.");
-    for i in 0..10000 {
+    let cmd_put = String::from("put key1=value2222.");
+    let cmd_get = String::from("get key1.");
+    for i in 0..2 {
         println!("i: {}", i);
-        if i % 10 != 9 {
+        if i % 2 != 1 {
             stream.write(cmd_put.as_bytes())?;
         } else {
             stream.write(cmd_get.as_bytes())?;

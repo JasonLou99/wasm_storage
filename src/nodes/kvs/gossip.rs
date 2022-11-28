@@ -21,7 +21,12 @@ impl Gossip for GossipEntity {
         &self,
         request: Request<AppendEntriesInGossipArgs>,
     ) -> Result<Response<AppendEntriesInGossipReply>, Status> {
-        println!("Got a rpc request: {:?}", request);
+        println!(
+            "KvsNode Got a RPC Request From: {:?}: key={}, value={}",
+            request.remote_addr().unwrap(),
+            request.get_ref().key,
+            request.get_ref().value
+        );
         let reply = gossip_rpc::AppendEntriesInGossipReply { success: true };
         Ok(Response::new(reply))
     }
@@ -29,22 +34,23 @@ impl Gossip for GossipEntity {
 
 impl KvsNode {
     // kvs作为客户端向其他kvs发送追加日志请求
-    pub async fn send_append_entries_in_gossip(&self) -> Result<(), Box<dyn std::error::Error>> {
-        // for member in self.get_membership() {
-        //     let mut client = GossipClient::connect(member).await.unwrap();
-        //     let request = tonic::Request::new(AppendEntriesInGossipArgs {
-        //         log: "gossip say hello".into(),
-        //     });
-        //     let response = client.append_entries_in_gossip(request).await.unwrap();
-        // }
-        let mut client = GossipClient::connect("http://192.168.10.120:11000")
-            .await
-            .unwrap();
-        let request = tonic::Request::new(AppendEntriesInGossipArgs {
-            log: "gossip say hello".into(),
-        });
-        let response = client.append_entries_in_gossip(request).await.unwrap();
-        // debug!("append_entries_in_gossip RPC response: {:?}", response);
+    pub async fn send_append_entries_in_gossip(
+        &self,
+        key_arg: String,
+        value_arg: String,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        // 让所有的KvsNode同步操作
+        for member in self.get_membership() {
+            // RPC Server地址
+            let dst = "http://".to_string() + member.as_str();
+            let mut client = GossipClient::connect(dst).await.unwrap();
+            let request = tonic::Request::new(AppendEntriesInGossipArgs {
+                key: key_arg.clone(),
+                value: value_arg.clone(),
+            });
+            let response = client.append_entries_in_gossip(request).await.unwrap();
+            if response.get_ref().success == true {}
+        }
         Ok(())
     }
 }
