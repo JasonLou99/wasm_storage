@@ -1,9 +1,10 @@
+use crate::store::Store;
+
 use self::gossip_rpc::gossip_server::Gossip;
 use super::KvsNode;
 use gossip_rpc::gossip_client::GossipClient;
 use gossip_rpc::gossip_server::GossipServer;
 use gossip_rpc::{AppendEntriesInGossipArgs, AppendEntriesInGossipReply};
-use log::debug;
 use tonic::transport::Server;
 use tonic::{Request, Response, Status};
 
@@ -21,12 +22,17 @@ impl Gossip for GossipEntity {
         &self,
         request: Request<AppendEntriesInGossipArgs>,
     ) -> Result<Response<AppendEntriesInGossipReply>, Status> {
+        let key = request.get_ref().key.clone();
+        let value = request.get_ref().value.clone();
         println!(
             "KvsNode Got a RPC Request From: {:?}: key={}, value={}",
             request.remote_addr().unwrap(),
-            request.get_ref().key,
-            request.get_ref().value
+            key,
+            value
         );
+        // RPC Server创建时Rust的所有权问题，创建临时数据库gossip
+        let mut temp_store = Store::init(String::from("db/gossip_db"));
+        temp_store.put(key, value).unwrap();
         let reply = gossip_rpc::AppendEntriesInGossipReply { success: true };
         Ok(Response::new(reply))
     }

@@ -1,21 +1,21 @@
 use rocksdb::DB;
 
 // log struct what is sent in rpc
-pub struct Log {
-    option: String,
-    key: String,
-    value: String,
-}
+// pub struct Log {
+//     option: String,
+//     key: String,
+//     value: String,
+// }
 
-impl Log {
-    pub fn init(option_arg: String, key_arg: String, value_arg: String) -> Log {
-        Log {
-            option: option_arg,
-            key: key_arg,
-            value: value_arg,
-        }
-    }
-}
+// impl Log {
+//     pub fn init(option_arg: String, key_arg: String, value_arg: String) -> Log {
+//         Log {
+//             option: option_arg,
+//             key: key_arg,
+//             value: value_arg,
+//         }
+//     }
+// }
 
 pub struct Store {
     db: DB,
@@ -56,7 +56,7 @@ mod db_tests {
     use super::Store;
     #[test]
     fn get() {
-        let path = "db";
+        let path = "db/kv_db";
         let store = Store::init(String::from(path));
         store
             .db

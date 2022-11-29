@@ -8,6 +8,7 @@ use tokio::net::TcpListener;
 use tokio::sync::Mutex;
 use wasm_storage::nodes::kvs::gossip::{self, GossipEntity};
 use wasm_storage::nodes::kvs::KvsNode;
+use wasm_storage::store::Store;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -98,11 +99,18 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     // println!("get_key_temp: {}", get_key_temp);
                     let (get_key, _) = get_key_temp.rsplit_once('.').unwrap();
                     // println!("get_key: {}", get_key);
+                    let mut temp_store = Store::init(String::from("db/gossip_db"));
+                    println!("打开gossip db");
+                    let get_value_from_gossipdb = temp_store.get(get_key.to_string()).unwrap();
                     let get_value =
                         block_on(block_on(arc_kvs_node_clone.lock()).get(get_key.to_string()))
                             .unwrap();
                     // println!("get_value: {}", get_value);
-                    debug!("KvsNode get {}={}", get_key, get_value);
+                    debug!("KvsNode get {}={} From kv_db", get_key, get_value);
+                    debug!(
+                        "KvsNode get {}={} From gossip_db",
+                        get_key, get_value_from_gossipdb
+                    );
                     let tcp_resp = format!("get {}={}", get_key, get_value);
                     println!("{}", tcp_resp);
                     socket

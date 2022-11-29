@@ -22,7 +22,7 @@ impl KvsNode {
         Self {
             node_id: node_id_arg.clone(),
             membership: membership_arg,
-            store: Store::init(String::from("db")),
+            store: Store::init(String::from("db/kv_db")),
         }
     }
 
