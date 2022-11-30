@@ -81,7 +81,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                             .put(put_key.to_string(), put_value.to_string()),
                     )
                     .unwrap();
-                    debug!("KvsNode put {} {}.", put_key, put_value);
+                    debug!("KvsNode put {} {}", put_key, put_value);
                     socket
                         .write_all("put success".as_bytes())
                         .await
@@ -116,7 +116,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     // debug!("GOSSIP_KEY_COUNT: {:?}", GOSSIP_KEY_COUNT);
                     // debug!("GOSSIP_QUEUE:{:?}", GOSSIP_QUEUE.lock().unwrap());
                     let tcp_resp = format!("get {}={}", get_key, get_value);
-                    println!("{}", tcp_resp);
+                    // println!("{}", tcp_resp);
                     socket
                         .write_all(tcp_resp.as_bytes())
                         .await
