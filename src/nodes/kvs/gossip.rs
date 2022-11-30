@@ -5,6 +5,7 @@ use gossip_rpc::gossip_client::GossipClient;
 use gossip_rpc::gossip_server::GossipServer;
 use gossip_rpc::{AppendEntriesInGossipArgs, AppendEntriesInGossipReply};
 use lazy_static::lazy_static;
+use log::debug;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Mutex;
 use tonic::transport::Server;
@@ -43,7 +44,10 @@ impl Gossip for GossipEntity {
         gossip_db.put(key.clone(), value.clone()).unwrap();
         GOSSIP_KEY_COUNT.fetch_add(1, Ordering::Relaxed);
         GOSSIP_QUEUE.lock().unwrap().push(key);
-
+        debug!(
+            "KvsNode get RPC append_entries_in_gossip, Update GOSSIP_QUEUE: {:?}",
+            GOSSIP_QUEUE.lock().unwrap()
+        );
         let reply = gossip_rpc::AppendEntriesInGossipReply { success: true };
         Ok(Response::new(reply))
     }
