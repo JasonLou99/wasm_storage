@@ -45,7 +45,8 @@ impl Gossip for GossipEntity {
         GOSSIP_KEY_COUNT.fetch_add(1, Ordering::Relaxed);
         GOSSIP_QUEUE.lock().unwrap().push(key);
         debug!(
-            "KvsNode Got a RPC append_entries_in_gossip, Update GOSSIP_QUEUE: {:?}",
+            "KvsNode Got a RPC append_entries_in_gossip, Update GOSSIP_KEY_COUNT: {:?}, GOSSIP_QUEUE: {:?}",
+            GOSSIP_KEY_COUNT,
             GOSSIP_QUEUE.lock().unwrap()
         );
         let reply = gossip_rpc::AppendEntriesInGossipReply { success: true };
