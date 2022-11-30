@@ -33,7 +33,7 @@ impl Gossip for GossipEntity {
     ) -> Result<Response<AppendEntriesInGossipReply>, Status> {
         let key = request.get_ref().key.clone();
         let value = request.get_ref().value.clone();
-        println!(
+        debug!(
             "KvsNode Got a RPC Request From: {:?}: key={}, value={}",
             request.remote_addr().unwrap(),
             key,
@@ -45,7 +45,7 @@ impl Gossip for GossipEntity {
         GOSSIP_KEY_COUNT.fetch_add(1, Ordering::Relaxed);
         GOSSIP_QUEUE.lock().unwrap().push(key);
         debug!(
-            "KvsNode get RPC append_entries_in_gossip, Update GOSSIP_QUEUE: {:?}",
+            "KvsNode Got a RPC append_entries_in_gossip, Update GOSSIP_QUEUE: {:?}",
             GOSSIP_QUEUE.lock().unwrap()
         );
         let reply = gossip_rpc::AppendEntriesInGossipReply { success: true };
