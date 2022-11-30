@@ -94,8 +94,8 @@ fn main() -> std::io::Result<()> {
     // let value = "value1";
     println!("sending put message");
     let cmd_put = String::from("put key1=value2222.");
-    let cmd_get = String::from("get lou.");
-    for i in 0..2 {
+    let cmd_get = String::from("get key1.");
+    for i in 0..4 {
         println!("i: {}", i);
         if i % 2 != 1 {
             stream.write(cmd_put.as_bytes())?;

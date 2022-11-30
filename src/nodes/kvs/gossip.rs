@@ -1,10 +1,12 @@
-use crate::store::Store;
-
 use self::gossip_rpc::gossip_server::Gossip;
 use super::KvsNode;
+use crate::store::Store;
 use gossip_rpc::gossip_client::GossipClient;
 use gossip_rpc::gossip_server::GossipServer;
 use gossip_rpc::{AppendEntriesInGossipArgs, AppendEntriesInGossipReply};
+use lazy_static::lazy_static;
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Mutex;
 use tonic::transport::Server;
 use tonic::{Request, Response, Status};
 
@@ -12,6 +14,12 @@ pub mod gossip_rpc {
     tonic::include_proto!("gossip_proto");
 }
 
+// 创建全局变量：动态数组GOSSIP_QUEUE，记录待同步的key
+lazy_static! {
+    pub static ref GOSSIP_QUEUE: Mutex<Vec<String>> = Mutex::new(vec![]);
+}
+// 创建全局变量：GOSSIP_KEY_COUNT，记录待同步的key的数量
+pub static GOSSIP_KEY_COUNT: AtomicUsize = AtomicUsize::new(0);
 pub struct GossipEntity {}
 
 // 实现 Gossip特征：append_entries_in_gossip server端的处理
@@ -31,8 +39,11 @@ impl Gossip for GossipEntity {
             value
         );
         // RPC Server创建时Rust的所有权问题，创建临时数据库gossip
-        let mut temp_store = Store::init(String::from("db/gossip_db"));
-        temp_store.put(key, value).unwrap();
+        let mut gossip_db = Store::init(String::from("db/gossip_db"));
+        gossip_db.put(key.clone(), value.clone()).unwrap();
+        GOSSIP_KEY_COUNT.fetch_add(1, Ordering::Relaxed);
+        GOSSIP_QUEUE.lock().unwrap().push(key);
+
         let reply = gossip_rpc::AppendEntriesInGossipReply { success: true };
         Ok(Response::new(reply))
     }

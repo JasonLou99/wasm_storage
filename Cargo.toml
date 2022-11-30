@@ -14,5 +14,6 @@ tonic = "0.8.2"
 prost = "0.11"
 rocksdb = "0.19"
 futures = "0.3.25"
+lazy_static = "1.4.0"
 [build-dependencies]
 tonic-build = { version = "0.8.2", features = ["prost"] }

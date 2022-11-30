@@ -6,7 +6,7 @@ use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::sync::Mutex;
-use wasm_storage::nodes::kvs::gossip::{self, GossipEntity};
+use wasm_storage::nodes::kvs::gossip::{self, GossipEntity, GOSSIP_KEY_COUNT, GOSSIP_QUEUE};
 use wasm_storage::nodes::kvs::KvsNode;
 use wasm_storage::store::Store;
 
@@ -17,6 +17,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let node_id = &args[1];
     let membership = &args[2..];
+
     // 初始化KvsNode
     let kvs_node = KvsNode::init(node_id.to_string(), membership.to_vec());
     info!("kvsnode init success!");
@@ -111,6 +112,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
                         "KvsNode get {}={} From gossip_db",
                         get_key, get_value_from_gossipdb
                     );
+                    debug!("GOSSIP_KEY_COUNT: {:?}", GOSSIP_KEY_COUNT);
+                    debug!("GOSSIP_QUEUE:{:?}", GOSSIP_QUEUE.lock().unwrap()[0]);
                     let tcp_resp = format!("get {}={}", get_key, get_value);
                     println!("{}", tcp_resp);
                     socket
