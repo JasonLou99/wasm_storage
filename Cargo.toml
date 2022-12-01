@@ -15,5 +15,8 @@ prost = "0.11"
 rocksdb = "0.19"
 futures = "0.3.25"
 lazy_static = "1.4.0"
+wasmedge-sys = "0.9"
+wasmedge-sdk = "0.4.0"
+wasmedge-types = "0.2.1"
 [build-dependencies]
 tonic-build = { version = "0.8.2", features = ["prost"] }

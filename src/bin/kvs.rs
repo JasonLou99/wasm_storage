@@ -1,4 +1,4 @@
-use futures::executor::block_on;
+// use futures::executor::block_on;
 use log::{debug, info};
 use std::env;
 use std::error::Error;
@@ -76,11 +76,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     let (put_key, put_value) = put_key_value.rsplit_once('=').unwrap();
                     let (put_value, _) = put_value.rsplit_once(".").unwrap();
                     // 本节点PUT操作执行完毕之后再执行Gossip同步
-                    block_on(
-                        block_on(arc_kvs_node_clone.lock())
-                            .put(put_key.to_string(), put_value.to_string()),
-                    )
-                    .unwrap();
+
+                    arc_kvs_node_clone
+                        .lock()
+                        .await
+                        .put(put_key.to_string(), put_value.to_string())
+                        .await
+                        .unwrap();
+
                     debug!("KvsNode put {} {}", put_key, put_value);
                     socket
                         .write_all("put success".as_bytes())
@@ -104,9 +107,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     // println!("打开gossip db");
                     // let mut temp_store = Store::init(String::from("db/gossip_db"));
                     // let get_value_from_gossipdb = temp_store.get(get_key.to_string()).unwrap();
-                    let get_value =
-                        block_on(block_on(arc_kvs_node_clone.lock()).get(get_key.to_string()))
-                            .unwrap();
+                    let get_value = arc_kvs_node_clone
+                        .lock()
+                        .await
+                        .get(get_key.to_string())
+                        .await
+                        .unwrap();
                     // println!("get_value: {}", get_value);
                     debug!("KvsNode get {}={} From kv_db", get_key, get_value);
                     // debug!(
