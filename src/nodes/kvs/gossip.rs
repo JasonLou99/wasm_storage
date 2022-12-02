@@ -40,8 +40,8 @@ impl Gossip for GossipEntity {
             value
         );
         // RPC Server创建时Rust的所有权问题，创建临时数据库gossip
-        let mut gossip_db = Store::init(String::from("db/gossip_db"));
-        gossip_db.put(key.clone(), value.clone()).unwrap();
+        // let mut gossip_db = Store::init(String::from("db/gossip_db"));
+        // gossip_db.put(key.clone(), value.clone()).unwrap();
         GOSSIP_KEY_COUNT.fetch_add(1, Ordering::Relaxed);
         GOSSIP_QUEUE.lock().unwrap().push(key);
         debug!(

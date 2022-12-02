@@ -1,6 +1,6 @@
 #!/bin/bash
 start_sec=`date '+%s'`
-for (( i = 1; i <= 10; i++ ))
+for (( i = 1; i <= 1; i++ ))
 do
     {
         wasmedge ./wasm_storage_client/target/wasm32-wasi/debug/examples/tcpclient.wasm
